@@ -1335,7 +1335,7 @@ Maximum time to wait for IPRisk on an uncached visitor address. A timeout does n
 
 When configured, tracked events receive IPRisk properties such as `iprisk_classificacao`, `iprisk_bot_ou_crawler`, `iprisk_risco_fraude`, `iprisk_deve_bloquear`, and the provider flags. The raw IP is sent to the configured IPRisk endpoint for analysis but is not added to the event properties. A process-local HMAC cache reuses a result for the same address until the next UTC day.
 
-Use these event properties as filters or breakdowns in a custom dashboard. For page and session analysis, use the `screen_view` event and the Sessions view. A result such as `IP_PUBLICO_SEM_RISCO_CONFIRMADO` is not proof that a visitor is human.
+Use these event properties as filters or breakdowns in a custom dashboard. A useful starting dashboard is `IPRisk | Visitors`: add a `screen_view` count broken down by `iprisk_classificacao`, a second chart filtered to `iprisk_bot_ou_crawler = true`, and another filtered to `iprisk_deve_bloquear = true`. Use the Sessions view to open the session and its replay when replay is enabled. These flags report the provider's assessment; they do not block the request. A result such as `IP_PUBLICO_SEM_RISCO_CONFIRMADO` is not proof that a visitor is human.
 
 ### IP_HEADER_ORDER
 
