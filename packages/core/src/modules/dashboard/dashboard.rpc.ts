@@ -54,6 +54,7 @@ export const dashboardRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         projectId: z.string(),
+        template: z.enum(['iprisk']).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
