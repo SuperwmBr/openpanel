@@ -45,6 +45,10 @@ import { isBot } from './src/bots/detect';
 import { applyBotSuspicion, stripBotProperties } from './src/bots/suspicion';
 import { isDuplicatedEvent } from './src/deduplicate';
 import { getDeviceId } from './src/device-id';
+import {
+  getIpriskProperties,
+  removeClientIpriskProperties,
+} from './src/iprisk';
 import type {
   IncomingEventPayload,
   IncomingEventProducer,
@@ -232,6 +236,7 @@ export interface TrackContext {
   // accept-language, which the whitelist above deliberately drops.
   requestHeaders: IngestHeaders;
   clientSecretAuth: boolean;
+  ipRiskIp: string;
   timestamp: { value: number; isFromPast: boolean };
   identity?: IIdentifyPayload;
   deviceId: string;
@@ -244,6 +249,8 @@ export interface TrackContext {
 export interface TrackRequest {
   projectId: string | null | undefined;
   clientIp: string;
+  /** Trusted edge IP; absent for untrusted browser-supplied headers. */
+  trustedClientIp?: string;
   headers: IngestHeaders;
   clientSecretAuth: boolean;
   /** The request-arrival timestamp. */
@@ -320,6 +327,9 @@ async function buildContext(
     headers,
     requestHeaders: request.headers,
     clientSecretAuth: request.clientSecretAuth,
+    ipRiskIp: request.clientSecretAuth
+      ? request.clientIp
+      : (request.trustedClientIp ?? ''),
     timestamp: {
       value: timestamp.timestamp,
       isFromPast: timestamp.isTimestampFromThePast,
@@ -338,6 +348,15 @@ async function handleTrack(
   transport: IngestTransport
 ): Promise<void> {
   const { projectId, deviceId, geo, headers, timestamp, sessionId } = context;
+
+  const eventProperties = removeClientIpriskProperties(payload.properties);
+  const ipRiskProperties = await getIpriskProperties(
+    context.ipRiskIp,
+    transport.deps.config.ipRisk
+  );
+  payload.properties = ipRiskProperties
+    ? { ...eventProperties, ...ipRiskProperties }
+    : eventProperties;
 
   const uaInfo = parseUserAgent(headers['user-agent'], payload.properties);
   // Mark (never block) likely bot traffic with __bot / __bot_reasons props.
