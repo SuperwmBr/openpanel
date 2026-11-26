@@ -26,6 +26,8 @@ const DEFAULT_SERVICE_ENVIRONMENT = 'dev';
 const DEFAULT_SHUTDOWN_FORCE_EXIT_MS = 20_000;
 /** Matches `packages/redis`'s own default, so leaving the variable unset changes nothing. */
 const DEFAULT_REDIS_CACHE_COMMAND_TIMEOUT_MS = 5000;
+const DEFAULT_IPRISK_API_URL = 'https://iprisk.softset.com.br/analyze';
+const DEFAULT_IPRISK_TIMEOUT_MS = 1500;
 
 const DEFAULT_KAFKA_CLIENT_ID = 'openpanel';
 const DEFAULT_KAFKA_EVENTS_TOPIC = 'events';
@@ -597,6 +599,9 @@ const rawSchema = z.object({
 
   IP_HEADER_ORDER: optionalTokenList,
   TRUSTED_IP_HEADER_ORDER: optionalTokenList,
+  IPRISK_API_URL: stringWithDefault(DEFAULT_IPRISK_API_URL),
+  IPRISK_API_KEY: optionalString,
+  IPRISK_TIMEOUT_MS: positiveIntWithDefault(DEFAULT_IPRISK_TIMEOUT_MS),
 });
 
 type RawEnv = z.infer<typeof rawSchema>;
@@ -987,6 +992,11 @@ function deriveCoreConfig(raw: RawEnv): CoreConfig {
     ipHeaders: {
       attributionOrder: raw.IP_HEADER_ORDER,
       trustedOrder: raw.TRUSTED_IP_HEADER_ORDER,
+    },
+    ipRisk: {
+      endpoint: raw.IPRISK_API_URL,
+      apiKey: raw.IPRISK_API_KEY,
+      timeoutMs: raw.IPRISK_TIMEOUT_MS,
     },
   };
 }
