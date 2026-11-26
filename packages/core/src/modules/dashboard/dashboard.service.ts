@@ -8,7 +8,10 @@ import { TRPCNotFoundError } from '../../rpc/errors';
 import type { ServiceDeps, Services } from '../../services';
 import { getId } from '../../slug-id';
 import { getProjectById } from '../project/project.service';
-import type { IChartEventFilter } from '../report/report.constants';
+import type {
+  IChartEventFilter,
+  IReportInput,
+} from '../report/report.constants';
 
 export type IServiceDashboard = Dashboard;
 export type IServiceDashboards = Prisma.DashboardGetPayload<{
@@ -88,6 +91,60 @@ export function listDashboardsCore(
   });
 }
 
+const IPRISK_SCREEN_VIEW_REPORTS: IReportInput[] = [
+  {
+    name: 'Sessions by IPRisk classification',
+    chartType: 'pie',
+    interval: 'day',
+    range: '30d',
+    metric: 'count',
+    breakdowns: [{ name: 'iprisk_classificacao' }],
+    series: [{ type: 'event', name: 'screen_view', segment: 'session', filters: [] }],
+  },
+  {
+    name: 'Bot or crawler sessions',
+    chartType: 'metric',
+    interval: 'day',
+    range: '30d',
+    metric: 'count',
+    breakdowns: [],
+    series: [{
+      type: 'event',
+      name: 'screen_view',
+      segment: 'session',
+      filters: [{ name: 'iprisk_bot_ou_crawler', operator: 'is', value: [true], type: 'boolean' }],
+    }],
+  },
+  {
+    name: 'Fraud risk sessions',
+    chartType: 'metric',
+    interval: 'day',
+    range: '30d',
+    metric: 'count',
+    breakdowns: [],
+    series: [{
+      type: 'event',
+      name: 'screen_view',
+      segment: 'session',
+      filters: [{ name: 'iprisk_risco_fraude', operator: 'is', value: [true], type: 'boolean' }],
+    }],
+  },
+  {
+    name: 'Sessions recommended for blocking',
+    chartType: 'metric',
+    interval: 'day',
+    range: '30d',
+    metric: 'count',
+    breakdowns: [],
+    series: [{
+      type: 'event',
+      name: 'screen_view',
+      segment: 'session',
+      filters: [{ name: 'iprisk_deve_bloquear', operator: 'is', value: [true], type: 'boolean' }],
+    }],
+  },
+];
+
 export async function createDashboard(
   deps: ServiceDeps,
   input: {
@@ -109,6 +166,40 @@ export async function createDashboard(
       name: input.name,
     },
   });
+}
+
+async function createDashboardWithTemplate(
+  deps: ServiceDeps,
+  services: () => Services,
+  input: {
+    name: string;
+    projectId: string;
+    template?: 'iprisk';
+  }
+): Promise<Dashboard> {
+  const dashboard = await createDashboard(deps, input);
+  if (input.template !== 'iprisk') {
+    return dashboard;
+  }
+
+  try {
+    await Promise.all(
+      IPRISK_SCREEN_VIEW_REPORTS.map((report) =>
+        services().report.createReport({
+          dashboardId: dashboard.id,
+          projectId: input.projectId,
+          report,
+        })
+      )
+    );
+  } catch (error) {
+    await deps.db.dashboard
+      .delete({ where: { id: dashboard.id } })
+      .catch(() => undefined);
+    throw error;
+  }
+
+  return dashboard;
 }
 
 export interface UpdateDashboardInput {
@@ -227,7 +318,7 @@ export async function deleteDashboard(
 
 export function createDashboardService(
   deps: ServiceDeps,
-  _services: () => Services
+  services: () => Services
 ) {
   return {
     getDashboardById: (
@@ -247,7 +338,8 @@ export function createDashboardService(
     createDashboard: (input: {
       name: string;
       projectId: string;
-    }): Promise<Dashboard> => createDashboard(deps, input),
+      template?: 'iprisk';
+    }): Promise<Dashboard> => createDashboardWithTemplate(deps, services, input),
     updateDashboard: (input: UpdateDashboardInput): Promise<Dashboard> =>
       updateDashboard(deps, input),
     duplicateDashboard: (id: string): Promise<Dashboard> =>
