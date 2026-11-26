@@ -1309,6 +1309,34 @@ Cap on distinct values returned per event property to the filter autocomplete. H
 EVENT_PROPERTY_VALUE_AUTOCOMPLETE_LIMIT=1000
 ```
 
+### IPRISK_API_URL
+
+**Type**: `string`
+**Required**: No
+**Default**: `https://iprisk.softset.com.br/analyze`
+
+Endpoint used by the optional visitor IP classification integration.
+
+### IPRISK_API_KEY
+
+**Type**: `string`
+**Required**: No
+**Default**: unset
+
+Server-side API key sent in the `x-api-key` header. Leaving it unset disables IPRisk requests. The key is never sent to the browser.
+
+### IPRISK_TIMEOUT_MS
+
+**Type**: `number`
+**Required**: No
+**Default**: `1500`
+
+Maximum time to wait for IPRisk on an uncached visitor address. A timeout does not reject the analytics event; the event is recorded with `iprisk_status: "unavailable"`.
+
+When configured, tracked events receive IPRisk properties such as `iprisk_classificacao`, `iprisk_bot_ou_crawler`, `iprisk_risco_fraude`, `iprisk_deve_bloquear`, and the provider flags. The raw IP is sent to the configured IPRisk endpoint for analysis but is not added to the event properties. A process-local HMAC cache reuses a result for the same address until the next UTC day.
+
+Use these event properties as filters or breakdowns in a custom dashboard. For page and session analysis, use the `screen_view` event and the Sessions view. A result such as `IP_PUBLICO_SEM_RISCO_CONFIRMADO` is not proof that a visitor is human.
+
 ### IP_HEADER_ORDER
 
 **Type**: `string` (comma-separated)
