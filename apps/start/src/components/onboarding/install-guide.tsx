@@ -38,6 +38,8 @@ export function InstallGuide({
   defaultMethod = 'ai',
 }: Props) {
   const [method, setMethod] = useState<InstallMethod>(defaultMethod);
+  const [sessionReplayEnabled, setSessionReplayEnabled] = useState(false);
+  const snippetContext = { ...context, sessionReplayEnabled };
 
   const select = (next: InstallMethod) => {
     trackFunnel('onboarding_install_method_selected', {
@@ -80,6 +82,27 @@ export function InstallGuide({
           );
         })}
       </div>
+      {projectTypes.includes('website') && (
+        <div className="rounded-xl border p-4">
+          <label className="row cursor-pointer items-center gap-3">
+            <input
+              checked={sessionReplayEnabled}
+              className="size-4 accent-primary"
+              onChange={(event) =>
+                setSessionReplayEnabled(event.currentTarget.checked)
+              }
+              type="checkbox"
+            />
+            <span className="font-medium">
+              Include session replay in the website setup
+            </span>
+          </label>
+          <p className="mt-2 text-muted-foreground text-sm">
+            When enabled, the generated setup records every session. OpenPanel
+            masks text and input values by default.
+          </p>
+        </div>
+      )}
       <div
         aria-labelledby={`install-tab-${method}`}
         id={`install-${method}`}
@@ -87,14 +110,14 @@ export function InstallGuide({
       >
         {method === 'ai' ? (
           <InstallWithAi
-            context={context}
+            context={snippetContext}
             projectId={projectId}
             projectName={projectName}
             projectTypes={projectTypes}
           />
         ) : (
           <InstallManual
-            context={context}
+            context={snippetContext}
             projectId={projectId}
             projectTypes={projectTypes}
           />
