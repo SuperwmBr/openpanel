@@ -124,7 +124,7 @@ export default function RootLayout({ children }) {
           trackScreenViews={true}
           trackOutgoingLinks={true}
           trackAttributes={true}
-          {context.sessionReplayEnabled ? 'sessionReplay={{ enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true }}' : ''}
+          ${context.sessionReplayEnabled ? 'sessionReplay={{ enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true }}' : ''}
         />
         {children}
       </body>
@@ -173,7 +173,7 @@ import { OpenPanelComponent } from '@openpanel/astro';
       trackScreenViews={true}
       trackOutgoingLinks={true}
       trackAttributes={true}
-      {context.sessionReplayEnabled ? 'sessionReplay={{ enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true }}' : ''}
+      ${context.sessionReplayEnabled ? 'sessionReplay={{ enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true }}' : ''}
     />
   </head>
   <body>
