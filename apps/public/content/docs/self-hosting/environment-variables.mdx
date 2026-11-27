@@ -1335,7 +1335,20 @@ Maximum time to wait for IPRisk on an uncached visitor address. A timeout does n
 
 When configured, tracked events receive IPRisk properties such as `iprisk_classificacao`, `iprisk_bot_ou_crawler`, `iprisk_risco_fraude`, `iprisk_deve_bloquear`, and the provider flags. The raw IP is sent to the configured IPRisk endpoint for analysis but is not added to the event properties. A process-local HMAC cache reuses a result for the same address until the next UTC day.
 
-After enabling the API key, open **Dashboards** and choose **IPRisk dashboard**. OpenPanel creates `IPRisk | Visitors` with reports for sessions by classification, bot/crawler sessions, fraud-risk sessions, and sessions recommended for blocking. Use the Sessions view to open a session and its replay when replay is enabled. These flags report the provider's assessment; they do not block the request. A result such as `IP_PUBLICO_SEM_RISCO_CONFIRMADO` is not proof that a visitor is human.
+After enabling the API key, open **Dashboards** and choose **IPRisk dashboard**. OpenPanel creates `IPRisk | Visitors` with reports for classification, bot/crawler sessions, fraud risk, blocking recommendations, sessions IPRisk recommends counting as real users, and the human-assessment status. The dashboard range can be changed to **Today** to inspect the current day's traffic. Open a session from the Sessions area to see its IPRisk assessment beside the existing replay player.
+
+Session replay is opt-in in the website's OpenPanel Web SDK. Add this option to the existing `new OpenPanel(...)` initialization on each site you want to record:
+
+```ts
+sessionReplay: {
+  enabled: true,
+  sampleRate: 1,
+  maskAllInputs: true,
+  maskAllText: true,
+}
+```
+
+This records all sessions for that site; lower `sampleRate` to record a fraction. OpenPanel masks inputs and text by default, and its documented replay retention is 30 days. If replay remains disabled in the website SDK, the session page still shows the IPRisk assessment but has no screen replay. These flags report the provider's assessment; they do not block the request. A result such as `IP_PUBLICO_SEM_RISCO_CONFIRMADO` is not proof that a visitor is human.
 
 ### IP_HEADER_ORDER
 
