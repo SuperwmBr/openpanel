@@ -83,6 +83,11 @@ function contextLines(input: AiPromptInput): string[] {
       ? `- Guide: ${input.framework.href} (every doc: ${DOCS_INDEX_URL})`
       : `- Guides: ${SDK_OVERVIEW_URL} (every doc: ${DOCS_INDEX_URL})`
   );
+  if (input.context.sessionReplayEnabled) {
+    lines.push(
+      '- Enable web session replay with sampleRate: 1, maskAllInputs: true, and maskAllText: true. This is an explicit project-owner opt-in.'
+    );
+  }
   return lines;
 }
 

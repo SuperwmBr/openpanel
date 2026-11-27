@@ -239,6 +239,13 @@ export interface IpHeaderConfig {
   trustedOrder: string[] | undefined;
 }
 
+/** IPRisk classification settings. The API key stays server-side. */
+export interface IpRiskConfig {
+  endpoint: string;
+  apiKey: string | undefined;
+  timeoutMs: number;
+}
+
 /** Everything core reads from the environment, parsed and derived once. */
 export interface CoreConfig {
   isProduction: boolean;
@@ -275,4 +282,5 @@ export interface CoreConfig {
   query: QueryConfig;
   objectStoreExport: ObjectStoreExportConfig;
   ipHeaders: IpHeaderConfig;
+  ipRisk: IpRiskConfig;
 }

@@ -13,6 +13,7 @@
 import type { AppDeps, HttpCtx } from '../../context';
 import { defineRoutes } from '../../http/define';
 import { toIngestHeaders } from '../../shared/headers';
+import { getTrustedIpFromHeaders } from '../../shared/get-client-ip';
 import type { DeprecatedPostEventPayload } from './ingest.constants';
 import { zTrackHandlerPayload } from './ingest.constants';
 import {
@@ -185,6 +186,10 @@ export const ingestRoutes = defineRoutes((app, deps: AppDeps) => {
               {
                 projectId: client.projectId,
                 clientIp: ctx.ip,
+                trustedClientIp: getTrustedIpFromHeaders(
+                  ctx.config.ipHeaders,
+                  ctx.headers
+                ).ip,
                 headers: toIngestHeaders(ctx.headers),
                 clientSecretAuth: client.secretVerified,
                 timestamp,
@@ -257,6 +262,10 @@ export const ingestRoutes = defineRoutes((app, deps: AppDeps) => {
               {
                 projectId: client.projectId,
                 clientIp: ctx.ip,
+                trustedClientIp: getTrustedIpFromHeaders(
+                  ctx.config.ipHeaders,
+                  ctx.headers
+                ).ip,
                 headers: toIngestHeaders(ctx.headers),
                 clientSecretAuth: client.secretVerified,
                 timestamp,

@@ -6,6 +6,8 @@ export interface SnippetContext {
   clientSecret: string | null;
   /** Set on self-hosted installs so snippets point at the right API. */
   apiUrl: string | null;
+  /** Include opt-in replay configuration when generating website snippets. */
+  sessionReplayEnabled?: boolean;
 }
 
 export interface InstallSnippet {
@@ -23,6 +25,11 @@ const secretOf = (context: SnippetContext) =>
 const apiUrlLine = (context: SnippetContext, indent: string) =>
   context.apiUrl ? `\n${indent}apiUrl: '${context.apiUrl}',` : '';
 
+const sessionReplayLine = (context: SnippetContext, indent: string) =>
+  context.sessionReplayEnabled
+    ? `\n${indent}sessionReplay: { enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true },`
+    : '';
+
 export function scriptTagSnippet(context: SnippetContext): string {
   return `<script>
   window.op=window.op||function(){var n=[];return new Proxy(function(){arguments.length&&n.push([].slice.call(arguments))},{get:function(t,r){return"q"===r?n:"call"===r||"apply"===r||"bind"===r?t[r]:function(){n.push([r].concat([].slice.call(arguments)))}} ,has:function(t,r){return"q"===r}}) }();
@@ -30,7 +37,7 @@ export function scriptTagSnippet(context: SnippetContext): string {
     clientId: '${context.clientId}',
     trackScreenViews: true,
     trackOutgoingLinks: true,
-    trackAttributes: true,
+    trackAttributes: true,${sessionReplayLine(context, '    ')}
   });
 </script>
 <script src="${SCRIPT_URL}" defer async></script>`;
@@ -49,7 +56,7 @@ export const op = new OpenPanel({${apiUrlLine(context, '  ')}
   clientId: '${context.clientId}',
   trackScreenViews: true,
   trackOutgoingLinks: true,
-  trackAttributes: true,
+  trackAttributes: true,${sessionReplayLine(context, '  ')}
 });`,
     },
   ];
@@ -117,6 +124,7 @@ export default function RootLayout({ children }) {
           trackScreenViews={true}
           trackOutgoingLinks={true}
           trackAttributes={true}
+          ${context.sessionReplayEnabled ? 'sessionReplay={{ enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true }}' : ''}
         />
         {children}
       </body>
@@ -141,7 +149,7 @@ export default defineNuxtConfig({
     clientId: '${context.clientId}',
     trackScreenViews: true,
     trackOutgoingLinks: true,
-    trackAttributes: true,
+    trackAttributes: true,${sessionReplayLine(context, '    ')}
   },
 });`,
       },
@@ -165,6 +173,7 @@ import { OpenPanelComponent } from '@openpanel/astro';
       trackScreenViews={true}
       trackOutgoingLinks={true}
       trackAttributes={true}
+      ${context.sessionReplayEnabled ? 'sessionReplay={{ enabled: true, sampleRate: 1, maskAllInputs: true, maskAllText: true }}' : ''}
     />
   </head>
   <body>

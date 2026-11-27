@@ -6,6 +6,7 @@ import {
   LayoutPanelTopIcon,
   Pencil,
   PlusIcon,
+  ShieldAlert,
   Trash,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -93,10 +94,21 @@ function Component() {
     <PageContainer>
       <PageHeader
         actions={
-          <Button icon={PlusIcon} onClick={() => pushModal('AddDashboard')}>
-            <span className="max-sm:hidden">Create dashboard</span>
-            <span className="sm:hidden">Dashboard</span>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              icon={ShieldAlert}
+              onClick={() =>
+                pushModal('AddDashboard', { template: 'iprisk' })
+              }
+              variant="outline"
+            >
+              IPRisk dashboard
+            </Button>
+            <Button icon={PlusIcon} onClick={() => pushModal('AddDashboard')}>
+              <span className="max-sm:hidden">Create dashboard</span>
+              <span className="sm:hidden">Dashboard</span>
+            </Button>
+          </div>
         }
         className="mb-8"
         description="Access all your dashboards here"
@@ -108,9 +120,20 @@ function Component() {
           icon={LayoutPanelTopIcon}
           title="No dashboards yet"
         >
-          <Button icon={PlusIcon} onClick={() => pushModal('AddDashboard')}>
-            Create dashboard
-          </Button>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button
+              icon={ShieldAlert}
+              onClick={() =>
+                pushModal('AddDashboard', { template: 'iprisk' })
+              }
+              variant="outline"
+            >
+              Create IPRisk dashboard
+            </Button>
+            <Button icon={PlusIcon} onClick={() => pushModal('AddDashboard')}>
+              Create dashboard
+            </Button>
+          </div>
         </EmptyState>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

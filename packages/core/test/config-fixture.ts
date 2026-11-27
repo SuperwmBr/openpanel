@@ -163,6 +163,11 @@ export function testCoreConfig(
       gcsApiEndpoint: undefined,
     },
     ipHeaders: { attributionOrder: undefined, trustedOrder: undefined },
+    ipRisk: {
+      endpoint: 'https://iprisk.softset.com.br/analyze',
+      apiKey: undefined,
+      timeoutMs: 1500,
+    },
     ...overrides,
   };
 }

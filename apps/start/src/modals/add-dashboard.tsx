@@ -20,9 +20,13 @@ type IForm = z.infer<typeof validator>;
 
 export interface AddDashboardProps {
   name?: string;
+  template?: 'iprisk';
 }
 
-export default function AddDashboard({ name }: AddDashboardProps = {}) {
+export default function AddDashboard({
+  name,
+  template,
+}: AddDashboardProps = {}) {
   const { projectId, organizationId } = useAppParams();
   const router = useRouter();
   const trpc = useTRPC();
@@ -31,7 +35,7 @@ export default function AddDashboard({ name }: AddDashboardProps = {}) {
   const { register, handleSubmit, formState } = useForm<IForm>({
     resolver: zodResolver(validator),
     defaultValues: {
-      name: name ?? '',
+      name: name ?? (template === 'iprisk' ? 'IPRisk | Visitors' : ''),
     },
   });
 
@@ -47,7 +51,10 @@ export default function AddDashboard({ name }: AddDashboardProps = {}) {
           },
         });
         toast('Success', {
-          description: 'Dashboard created.',
+          description:
+            template === 'iprisk'
+              ? 'IPRisk dashboard created with visitor classification charts.'
+              : 'Dashboard created.',
         });
         queryClient.invalidateQueries(trpc.dashboard.list.pathFilter());
         popModal();
@@ -58,16 +65,25 @@ export default function AddDashboard({ name }: AddDashboardProps = {}) {
 
   return (
     <ModalContent>
-      <ModalHeader title="Add dashboard" />
+      <ModalHeader
+        title={template === 'iprisk' ? 'Create IPRisk dashboard' : 'Add dashboard'}
+      />
       <form
         className="flex flex-col gap-4"
         onSubmit={handleSubmit(({ name }) => {
           mutation.mutate({
             name,
             projectId,
+            template,
           });
         })}
       >
+        {template === 'iprisk' && (
+          <p className="text-muted-foreground text-sm">
+            Creates session charts for IPRisk classification, bot or crawler
+            flags, fraud risk, and blocking recommendations.
+          </p>
+        )}
         <InputWithLabel
           label="Name"
           placeholder="Name of the dashboard"
