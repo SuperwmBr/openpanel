@@ -142,6 +142,29 @@ const IPRISK_SCREEN_VIEW_REPORTS: IReportInput[] = [
       segment: 'session',
       filters: [{ name: 'iprisk_deve_bloquear', operator: 'is', value: [true], type: 'boolean' }],
     }],
+  },,
+  {
+    name: 'Sessions IPRisk recommends counting as real users',
+    chartType: 'metric',
+    interval: 'day',
+    range: '30d',
+    metric: 'count',
+    breakdowns: [],
+    series: [{
+      type: 'event',
+      name: 'screen_view',
+      segment: 'session',
+      filters: [{ name: 'iprisk_usuario_real', operator: 'is', value: [true], type: 'boolean' }],
+    }],
+  },
+  {
+    name: 'Human assessment status',
+    chartType: 'pie',
+    interval: 'day',
+    range: '30d',
+    metric: 'count',
+    breakdowns: [{ name: 'iprisk_avaliacao_humano' }],
+    series: [{ type: 'event', name: 'screen_view', segment: 'session', filters: [] }],
   },
 ];
 
