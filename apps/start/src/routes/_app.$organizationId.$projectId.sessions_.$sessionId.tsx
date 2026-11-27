@@ -272,7 +272,7 @@ function getSessionIpriskProperties(
 
 function formatIpriskValue(value: unknown): string {
   if (typeof value === 'boolean') {
-    return value ? 'Sim' : 'Não';
+    return value ? 'Yes' : 'No';
   }
   if (typeof value === 'number') {
     return String(value);
@@ -288,18 +288,18 @@ function IpriskSessionCard({
   properties: Record<string, unknown> | undefined;
 }) {
   const fields = [
-    ['Estado da consulta', 'iprisk_status'],
-    ['Classificação', 'iprisk_classificacao'],
-    ['Bot ou crawler', 'iprisk_bot_ou_crawler'],
-    ['Risco de fraude', 'iprisk_risco_fraude'],
-    ['Recomendação de bloqueio', 'iprisk_deve_bloquear'],
-    ['IPRisk recomenda contabilizar como usuário real', 'iprisk_usuario_real'],
-    ['Avaliação humana', 'iprisk_avaliacao_humano'],
-    ['Pontuação de bot (0 a 10)', 'iprisk_bot_score'],
-    ['Pontuação de risco (0 a 10)', 'iprisk_risk_score'],
+    ['Lookup status', 'iprisk_status'],
+    ['Classification', 'iprisk_classificacao'],
+    ['Bot or crawler', 'iprisk_bot_ou_crawler'],
+    ['Fraud risk', 'iprisk_risco_fraude'],
+    ['Blocking recommendation', 'iprisk_deve_bloquear'],
+    ['IPRisk recommends counting as a real user', 'iprisk_usuario_real'],
+    ['Human assessment', 'iprisk_avaliacao_humano'],
+    ['Bot score (0 to 10)', 'iprisk_bot_score'],
+    ['Risk score (0 to 10)', 'iprisk_risk_score'],
     ['VPN', 'iprisk_vpn'],
     ['Proxy', 'iprisk_proxy'],
-    ['Proxy residencial', 'iprisk_proxy_residencial'],
+    ['Residential proxy', 'iprisk_proxy_residencial'],
     ['Datacenter', 'iprisk_datacenter'],
     ['Tor', 'iprisk_tor'],
   ] as const;
@@ -310,7 +310,7 @@ function IpriskSessionCard({
   return (
     <Widget className="w-full">
       <WidgetHead>
-        <WidgetTitle icon={ShieldAlertIcon}>Avaliação IPRisk</WidgetTitle>
+        <WidgetTitle icon={ShieldAlertIcon}>IPRisk assessment</WidgetTitle>
       </WidgetHead>
       <WidgetBody>
         {recordedFields.length > 0 ? (
@@ -326,15 +326,13 @@ function IpriskSessionCard({
           </dl>
         ) : (
           <p className="text-muted-foreground text-sm">
-            Esta sessão não tem uma avaliação IPRisk registrada. Verifique se a
-            integração está ativa e se os eventos foram recebidos após a
-            configuração.
+            This session has no IPRisk assessment. Confirm the integration is enabled
+            and that events were received after configuration.
           </p>
         )}
         <p className="mt-3 border-t pt-3 text-muted-foreground text-xs">
-          O IP bruto não é exibido nesta tela. A avaliação do IPRisk é um sinal
-          de risco e não comprova, por si só, que uma pessoa é humana ou que
-          houve fraude.
+          The raw IP is not shown here. IPRisk is a risk signal and does not by
+          itself prove that a visitor is human or fraudulent.
         </p>
       </WidgetBody>
     </Widget>
