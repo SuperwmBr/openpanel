@@ -1,4 +1,4 @@
-import type { IServiceProfile, IServiceSession } from '@openpanel/core';
+import type { IServiceEvent, IServiceProfile, IServiceSession } from '@openpanel/core';
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import {
@@ -7,6 +7,7 @@ import {
   ClockIcon,
   CopyIcon,
   Loader2Icon,
+  ShieldAlertIcon,
   VideoIcon,
 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -254,6 +255,92 @@ function SessionGroups({
   );
 }
 
+function getSessionIpriskProperties(
+  events: IServiceEvent[]
+): Record<string, unknown> | undefined {
+  let latestEvent: IServiceEvent | undefined;
+  for (const event of events) {
+    if (typeof event.properties.iprisk_status !== 'string') {
+      continue;
+    }
+    if (!latestEvent || event.createdAt.getTime() > latestEvent.createdAt.getTime()) {
+      latestEvent = event;
+    }
+  }
+  return latestEvent?.properties;
+}
+
+function formatIpriskValue(value: unknown): string {
+  if (typeof value === 'boolean') {
+    return value ? 'Sim' : 'Não';
+  }
+  if (typeof value === 'number') {
+    return String(value);
+  }
+  return typeof value === 'string' && value.length > 0
+    ? value
+    : 'Indeterminado';
+}
+
+function IpriskSessionCard({
+  properties,
+}: {
+  properties: Record<string, unknown> | undefined;
+}) {
+  const fields = [
+    ['Estado da consulta', 'iprisk_status'],
+    ['Classificação', 'iprisk_classificacao'],
+    ['Bot ou crawler', 'iprisk_bot_ou_crawler'],
+    ['Risco de fraude', 'iprisk_risco_fraude'],
+    ['Recomendação de bloqueio', 'iprisk_deve_bloquear'],
+    ['IPRisk recomenda contabilizar como usuário real', 'iprisk_usuario_real'],
+    ['Avaliação humana', 'iprisk_avaliacao_humano'],
+    ['Pontuação de bot (0 a 10)', 'iprisk_bot_score'],
+    ['Pontuação de risco (0 a 10)', 'iprisk_risk_score'],
+    ['VPN', 'iprisk_vpn'],
+    ['Proxy', 'iprisk_proxy'],
+    ['Proxy residencial', 'iprisk_proxy_residencial'],
+    ['Datacenter', 'iprisk_datacenter'],
+    ['Tor', 'iprisk_tor'],
+  ] as const;
+  const recordedFields = properties
+    ? fields.filter(([, key]) => properties[key] !== undefined)
+    : [];
+
+  return (
+    <Widget className="w-full">
+      <WidgetHead>
+        <WidgetTitle icon={ShieldAlertIcon}>Avaliação IPRisk</WidgetTitle>
+      </WidgetHead>
+      <WidgetBody>
+        {recordedFields.length > 0 ? (
+          <dl className="grid grid-cols-1 gap-3">
+            {recordedFields.map(([label, key]) => (
+              <div className="flex items-start justify-between gap-4" key={key}>
+                <dt className="text-muted-foreground text-sm">{label}</dt>
+                <dd className="text-right text-sm font-medium">
+                  {formatIpriskValue(properties?.[key])}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Esta sessão não tem uma avaliação IPRisk registrada. Verifique se a
+            integração está ativa e se os eventos foram recebidos após a
+            configuração.
+          </p>
+        )}
+        <p className="mt-3 border-t pt-3 text-muted-foreground text-xs">
+          O IP bruto não é exibido nesta tela. A avaliação do IPRisk é um sinal
+          de risco e não comprova, por si só, que uma pessoa é humana ou que
+          houve fraude.
+        </p>
+      </WidgetBody>
+    </Widget>
+  );
+}
+
 function Component() {
   const { projectId, sessionId, organizationId } = Route.useParams();
   const trpc = useTRPC();
@@ -280,6 +367,10 @@ function Component() {
   const visits = useMemo(
     () => groupEventsByPage(events, session.endedAt),
     [events, session.endedAt]
+  );
+  const ipriskProperties = useMemo(
+    () => getSessionIpriskProperties(events),
+    [events]
   );
   const eventCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -357,6 +448,7 @@ function Component() {
             projectId={projectId}
             session={session}
           />
+          <IpriskSessionCard properties={ipriskProperties} />
           <SessionProperties session={session} />
           <SessionGroups
             groupIds={session.groups ?? []}
